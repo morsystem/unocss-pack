@@ -1,0 +1,135 @@
+# UnoCSS Pack - Build and Release Workflow
+name: Build and Release UnoCSS Pack
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build UnoCSS bundle
+        run: |
+          chmod +x bundle.sh
+          ./bundle.sh
+          
+          # Verify build succeeded
+          if [ ! -f "modules/unocss-core.bundle.js" ]; then
+            echo "❌ Build failed - bundle not found"
+            exit 1
+          fi
+          
+          echo "✅ Build successful"
+          ls -lh modules/
+
+      - name: Create ZIP archive
+        run: |
+          # Create ZIP with all files including built modules
+          zip -r unocss.zip . \
+            -x "*.git*" \
+            -x "node_modules/*" \
+            -x ".DS_Store" \
+            -x "*.zip" \
+            -x "package-lock.json"
+          
+          echo "📦 Pack archive created:"
+          ls -lh unocss.zip
+          
+          # List contents for verification
+          echo "📋 Archive contents:"
+          unzip -l unocss.zip | grep modules/
+
+      - name: Generate SHA256 checksum
+        run: |
+          sha256sum unocss.zip > unocss.zip.sha256
+          echo "Checksum:"
+          cat unocss.zip.sha256
+
+      # Upload as artifact for all builds
+      - name: Upload pack artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unocss-latest
+          path: |
+            unocss.zip
+            unocss.zip.sha256
+          retention-days: 30
+
+      # Create release only for tags
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            unocss.zip
+            unocss.zip.sha256
+          body: |
+            ## Motor UnoCSS Pack
+            
+            UnoCSS core runtime for Motor - instant on-demand atomic CSS generation.
+            
+            ### Installation
+            
+            Install directly from this release:
+            ```bash
+            motor pack add https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/unocss.zip
+            ```
+            
+            Or install from the repository (automatically uses latest release):
+            ```bash
+            motor pack add https://github.com/${{ github.repository }}
+            ```
+            
+            ### Verification
+            
+            To verify the download integrity:
+            ```bash
+            sha256sum -c unocss.zip.sha256
+            ```
+            
+            ### What's Changed
+            
+            See the commits since the last release below.
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
+
+      # Update latest release pointer for main branch
+      - name: Update latest release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          files: |
+            unocss.zip
+            unocss.zip.sha256
+          body: |
+            ## Latest Development Build
+            
+            This is an automated build from the main branch.
+            
+            **⚠️ Note:** This is not a stable release. For production use, please use a tagged release.
+            
+            ### Installation
+            
+            ```bash
+            motor pack add https://github.com/${{ github.repository }}/releases/download/latest/unocss.zip
+            ```
+          prerelease: true
