@@ -1,0 +1,24 @@
+{
+  "name": "@motor/unocss",
+  "version": "1.0.0",
+  "description": "UnoCSS core runtime for Motor - instant on-demand atomic CSS generation",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c",
+    "clean": "rm -rf modules/",
+    "bundle": "./bundle.sh"
+  },
+  "keywords": ["motor", "unocss", "css", "atomic-css", "runtime"],
+  "author": "Motor Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.2",
+    "@rollup/plugin-node-resolve": "^15.3.1",
+    "@rollup/plugin-replace": "^6.0.2",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.31.0"
+  },
+  "dependencies": {
+    "@unocss/core": "^0.65.2"
+  }
+}

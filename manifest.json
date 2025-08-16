@@ -1,0 +1,210 @@
+{
+  "name": "unocss",
+  "version": "1.0.0",
+  "description": "UnoCSS - The instant on-demand atomic CSS engine for Motor",
+  "author": "Motor Team",
+  "license": "MIT",
+  "motor_version": ">=0.2.0",
+  "homepage": "https://github.com/motor/packs/unocss",
+  "dependencies": {
+    "packs": []
+  },
+  "success_message": [
+    "✅ UnoCSS core installed successfully!",
+    "",
+    "🎨 Features:",
+    "  • Build-time CSS generation from event-sourced modules",
+    "  • Dynamic preset system",
+    "  • Custom configuration support",
+    "  • Pure event-sourcing - CSS stored as records",
+    "",
+    "📦 Next steps:",
+    "  1. Install a preset: motor pack add -f packs/unocss-tailwind",
+    "  2. CSS will be auto-generated during pack installation",
+    "  3. Use in HTML: <link rel=\"stylesheet\" href=\"/tailwind.css\">",
+    "",
+    "🔄 Regenerate CSS after adding modules:",
+    "  motor action run regenerate-css",
+    "",
+    "📚 Documentation: See packs/unocss/README.md"
+  ],
+  
+  "records": [
+    {
+      "type": "module",
+      "name": "unocss-core",
+      "file": "modules/unocss-core.bundle.js",
+      "description": "UnoCSS core engine bundled for Motor"
+    },
+    {
+      "type": "action",
+      "name": "register-preset",
+      "file": "app/actions/register-preset.ts",
+      "description": "Register a UnoCSS preset",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the preset"
+          },
+          "module": {
+            "type": "string",
+            "description": "Module name containing the preset"
+          },
+          "path": {
+            "type": "string",
+            "description": "CSS path to serve (default: /{name}.css)"
+          },
+          "priority": {
+            "type": "number",
+            "description": "Priority for preset ordering (default: 100)"
+          },
+          "config": {
+            "type": "object",
+            "description": "Default configuration for the preset"
+          }
+        },
+        "required": ["name", "module"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "type": "action",
+      "name": "create-config",
+      "file": "app/actions/create-config.ts",
+      "description": "Create a custom UnoCSS configuration",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Configuration name"
+          },
+          "presets": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Names of presets to include"
+          },
+          "theme": {
+            "type": "object",
+            "description": "Theme overrides"
+          },
+          "rules": {
+            "type": "array",
+            "description": "Custom CSS rules"
+          },
+          "shortcuts": {
+            "type": "object",
+            "description": "Custom shortcuts"
+          },
+          "path": {
+            "type": "string",
+            "description": "CSS path (default: /{name}.css)"
+          }
+        },
+        "required": ["name", "presets"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "type": "action",
+      "name": "regenerate-css",
+      "file": "app/actions/regenerate-css.js",
+      "description": "CSS regeneration action with real UnoCSS and content-based fingerprints",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "configName": {
+            "type": "string",
+            "description": "Configuration name (default: unocss-wind4)"
+          },
+          "themeModule": {
+            "type": "string",
+            "description": "Optional theme module name to load custom theme configuration"
+          },
+          "minify": {
+            "type": "boolean",
+            "description": "Whether to minify the CSS (default: true)"
+          },
+          "includeReset": {
+            "type": "boolean",
+            "description": "Whether to include CSS reset (default: false)"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "type": "query",
+      "name": "scan-classes",
+      "file": "app/queries/scan-classes.ts",
+      "description": "Scan Motor records for CSS classes",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "includeModules": {
+            "type": "boolean",
+            "description": "Scan compiled modules (default: true)"
+          },
+          "includeAssets": {
+            "type": "boolean",
+            "description": "Scan HTML assets (default: true)"
+          },
+          "includeRouters": {
+            "type": "boolean",
+            "description": "Scan router outputs (default: false)"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "type": "query",
+      "name": "get-presets",
+      "file": "app/queries/get-presets.ts",
+      "description": "Get all registered UnoCSS presets",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "includeConfig": {
+            "type": "boolean",
+            "description": "Include preset configuration (default: true)"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "type": "query",
+      "name": "generate-css",
+      "file": "app/queries/generate-css.ts",
+      "description": "Generate CSS using UnoCSS",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "configName": {
+            "type": "string",
+            "description": "Configuration name (default: 'all')"
+          },
+          "minify": {
+            "type": "boolean",
+            "description": "Minify output CSS (default: true)"
+          },
+          "includeReset": {
+            "type": "boolean",
+            "description": "Include CSS reset (default: false)"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "type": "query",
+      "name": "get-configs",
+      "file": "app/queries/get-configs.ts",
+      "description": "Get all UnoCSS configurations"
+    }
+  ]
+}
